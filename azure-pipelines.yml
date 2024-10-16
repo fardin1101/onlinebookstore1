@@ -10,7 +10,7 @@ jobs:
   pool:
     name: 'Default'
     demands:
-      - agent.name -equals DESKTOP-1QUEN13
+      - agent.name -equals DESKTOP-IGD4N6V
 
   steps:
   # Step to checkout the code
@@ -31,7 +31,7 @@ jobs:
       javaHomeOption: 'Path'
       jdkDirectory: 'C:\Program Files\Java\jdk-17'  # This should point to the JDK directory, not bin
       mavenVersionOption: 'Path'
-      mavenDirectory: 'C:\Program Files\apache-maven-3.9.9'  # This should point to the Maven directory, not bin
+      mavenDirectory: 'C:\Program Files\apache-maven-3.9.6'  # This should point to the Maven directory, not bin
       mavenSetM2Home: true
       mavenAuthenticateFeed: false
       effectivePomSkip: false
