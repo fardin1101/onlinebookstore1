@@ -51,6 +51,6 @@ jobs:
       reportformat: 'json'
 
   # Step to publish the Gitleaks report
-  - publish: '$(Build.SourcesDirectory)/path/to/gitleaks/report.json'  # Adjust this path to the actual report location
+  - publish: '$(Build.SourcesDirectory)D:\agent\vsts-agent-win-x64-3.245.0\_work\report.json'  # Adjust this path to the actual report location
     artifact: gitleaks-report
     displayName: 'Publish Gitleaks Report'
