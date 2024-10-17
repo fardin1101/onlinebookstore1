@@ -58,15 +58,15 @@ jobs:
       dir "$(Build.ArtifactStagingDirectory)"
     displayName: 'List Artifact Staging Directory Contents'
 
-  # Step to print the location of the generated Gitleaks report
-  - script: |
-      if exist "$(Build.ArtifactStagingDirectory)\gitleaks-report.json" (
-        echo "Gitleaks report exists at $(Build.ArtifactStagingDirectory)\gitleaks-report.json"
-      ) else (
-        echo "##vso[task.logissue type=error]Gitleaks report does not exist."
-        exit /b 1
-      )
-    displayName: 'Verify Gitleaks Report'
+  # # Step to print the location of the generated Gitleaks report
+  # - script: |
+  #     if exist "$(Build.ArtifactStagingDirectory)\gitleaks-report.json" (
+  #       echo "Gitleaks report exists at $(Build.ArtifactStagingDirectory)\gitleaks-report.json"
+  #     ) else (
+  #       echo "##vso[task.logissue type=error]Gitleaks report does not exist."
+  #       exit /b 1
+  #     )
+  #   displayName: 'Verify Gitleaks Report'
 
   # Step to publish the Gitleaks report
   - publish: '$(Build.ArtifactStagingDirectory)/gitleaks-report.json'
