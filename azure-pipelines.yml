@@ -50,6 +50,13 @@ jobs:
       predefinedconfigfile: 'UDMSecretChecksv8.toml'
       reportformat: 'json'
       outputfile: '$(Build.ArtifactStagingDirectory)/gitleaks-report.json'
+    displayName: 'Run Gitleaks'
+
+  # Step to list the contents of the Artifact Staging Directory
+  - script: |
+      echo "Listing contents of $(Build.ArtifactStagingDirectory):"
+      dir "$(Build.ArtifactStagingDirectory)"
+    displayName: 'List Artifact Staging Directory Contents'
 
   # Step to verify that the Gitleaks report was created
   - script: |
