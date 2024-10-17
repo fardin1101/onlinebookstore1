@@ -49,8 +49,9 @@ jobs:
       configtype: 'predefined'
       predefinedconfigfile: 'UDMSecretChecksv8.toml'
       reportformat: 'json'
+      outputfile: '$(Build.ArtifactStagingDirectory)/gitleaks-report.json'
 
   # Step to publish the Gitleaks report
-  - publish: '$(Build.SourcesDirectory)D:\agent\vsts-agent-win-x64-3.245.0\_work\report.json'  # Adjust this path to the actual report location
+  - publish: '$(Build.ArtifactStagingDirectory)/gitleaks-report.json'
     artifact: gitleaks-report
     displayName: 'Publish Gitleaks Report'
