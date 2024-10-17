@@ -1,10 +1,4 @@
 trigger:
-- task: Gitleaks@2
-    inputs:
-    scanlocation: '$(Build.SourcesDirectory)'
-    configtype: 'predefined'
-    predefinedconfigfile: 'GitleaksUdmCombo.toml'
-    reportformat: 'json'
 - main
 
 pool:
@@ -56,7 +50,7 @@ jobs:
       predefinedconfigfile: 'UDMSecretChecksv8.toml'
       reportformat: 'json'
       outputfile: '$(Build.ArtifactStagingDirectory)/gitleaks-report.json'
-     displayName: 'Run Gitleaks'
+    displayName: 'Run Gitleaks'
 
   # Step to list the contents of the Artifact Staging Directory
   - script: |
