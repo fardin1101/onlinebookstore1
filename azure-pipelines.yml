@@ -29,22 +29,28 @@ jobs:
       publishJUnitResults: true
       testResultsFiles: '**/surefire-reports/TEST-*.xml'
       javaHomeOption: 'Path'
-      jdkDirectory: 'C:\Program Files\Java\jdk-17.0.2'  # This should point to the JDK directory, not bin
+      jdkDirectory: 'C:\Program Files\Java\jdk-17.0.2'
       mavenVersionOption: 'Path'
-      mavenDirectory: 'C:\Program Files\apache-maven-3.9.6'  # This should point to the Maven directory, not bin
+      mavenDirectory: 'C:\Program Files\apache-maven-3.9.6'
       mavenSetM2Home: true
       mavenAuthenticateFeed: false
       effectivePomSkip: false
       sonarQubeRunAnalysis: false
-      goals: 'clean install'  # Specify the Maven goals here
+      goals: 'clean install'
 
   # Step to run unit tests
   - script: mvn test
     displayName: 'Run unit tests'
 
+  # Step to run Gitleaks
   - task: Gitleaks@2
     inputs:
       scanlocation: '$(Build.SourcesDirectory)'
       configtype: 'predefined'
       predefinedconfigfile: 'UDMSecretChecksv8.toml'
       reportformat: 'json'
+
+  # Step to publish the Gitleaks report
+  - publish: '$(Build.SourcesDirectory)/path/to/gitleaks/report.json'  # Adjust this path to the actual report location
+    artifact: gitleaks-report
+    displayName: 'Publish Gitleaks Report'
