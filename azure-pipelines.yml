@@ -51,7 +51,17 @@ jobs:
       reportformat: 'json'
       outputfile: '$(Build.ArtifactStagingDirectory)/gitleaks-report.json'
 
+  # Step to verify that the Gitleaks report was created
+  - script: |
+      if exist "$(Build.ArtifactStagingDirectory)\gitleaks-report.json" (
+        echo "Gitleaks report exists."
+      ) else (
+        echo "##vso[task.logissue type=error]Gitleaks report does not exist."
+        exit /b 1
+      )
+    displayName: 'Verify Gitleaks Report'
+
   # Step to publish the Gitleaks report
-  - publish: 'D:/agent/vsts-agent-win-x64-3.245.0/_work/1/s/gitleaks-report.json'
+  - publish: '$(Build.ArtifactStagingDirectory)/gitleaks-report.json'
     artifact: gitleaks-report
     displayName: 'Publish Gitleaks Report'
