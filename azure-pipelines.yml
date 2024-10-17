@@ -58,10 +58,10 @@ jobs:
       dir "$(Build.ArtifactStagingDirectory)"
     displayName: 'List Artifact Staging Directory Contents'
 
-  # Step to verify that the Gitleaks report was created
+  # Step to print the location of the generated Gitleaks report
   - script: |
       if exist "$(Build.ArtifactStagingDirectory)\gitleaks-report.json" (
-        echo "Gitleaks report exists."
+        echo "Gitleaks report exists at $(Build.ArtifactStagingDirectory)\gitleaks-report.json"
       ) else (
         echo "##vso[task.logissue type=error]Gitleaks report does not exist."
         exit /b 1
