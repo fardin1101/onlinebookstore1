@@ -1,0 +1,15 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto11 # or 17 depending on your app
+    commands:
+      - echo Installing dependencies...
+      - mvn clean install
+
+artifacts:
+  files:
+    - target/*.jar
+  discard-paths: yes
+  base-directory: target
