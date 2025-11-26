@@ -21,9 +21,8 @@ jobs:
 
       - name: Install ngrok
         run: |
-          DOWNLOAD_URL=$(curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.zip | sed -n 's/.*downloadUrl.*value="\([^"]*\)".*/\1/p')
-          curl -sL $DOWNLOAD_URL -o ngrok.zip
-          unzip -q ngrok.zip
+          wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz
+          tar xvzf ngrok-v3-stable-linux-amd64.tgz
           chmod +x ngrok
           sudo mv ngrok /usr/local/bin/
 
