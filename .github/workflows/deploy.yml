@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -20,27 +21,29 @@ jobs:
 
       - name: Install ngrok
         run: |
-          wget -q https://bin.equinox.io/c/bNyj1mQVY4/ngrok-v3-stable-linux-amd64.tgz
-          tar xvzf ngrok-v3-stable-linux-amd64.tgz
+          curl -s https://ngrok.com/download -L -o ngrok.zip
+          unzip -q ngrok.zip
           chmod +x ngrok
+          sudo mv ngrok /usr/local/bin/
 
-      - name: Start ngrok
+      - name: Authenticate & start ngrok
         env:
           NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
         run: |
-          ./ngrok config add-authtoken $NGROK_AUTHTOKEN
-          ./ngrok http 8080 --log=stdout > ngrok.log 2>&1 &
-          sleep 10
-          curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url'
+          ngrok config add-authtoken $NGROK_AUTHTOKEN
+          ngrok http 8080 --log=stdout > ngrok.log 2>&1 &
+          echo "Waiting for tunnel..."
+          sleep 12
 
-      - name: Get ngrok URL
+      - name: Get ngrok public URL
         id: ngrok
         run: |
-          URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
+          URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[] | select(.proto=="https") | .public_url')
           echo "ngrok_url=$URL" >> $GITHUB_OUTPUT
+          echo "Deploying via $URL"
 
-      - name: Deploy to Tomcat
+      - name: Deploy WAR to Tomcat
         run: |
           curl -v --upload-file target/*.war \
-            "${{ steps.ngrok.outputs.ngrok_url }}/manager/text/deploy?path=/your-app&update=true" \
+            "${{ steps.ngrok.outputs.ngrok_url }}/manager/text/deploy?path=/BKStore&update=true" \
             -u admin:admin123
