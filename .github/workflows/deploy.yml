@@ -43,7 +43,10 @@ jobs:
           echo "Deploying via $URL"
 
       - name: Deploy WAR to Tomcat
+        env:
+          TOMCAT_USER: admin
+          TOMCAT_PASSWORD: admin123
         run: |
           curl -v --upload-file target/*.war \
             "${{ steps.ngrok.outputs.ngrok_url }}/manager/text/deploy?path=/your-app-name&update=true" \
-            -u admin:admin123
+            -u $TOMCAT_USER:$TOMCAT_PASSWORD
