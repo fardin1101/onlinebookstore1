@@ -21,7 +21,7 @@ jobs:
 
       - name: Install ngrok
         run: |
-          wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz
+          wget https://bin.equinox.io/c/bNyj1mQVY4C/ngrok-v3-stable-linux-amd64.tgz
           tar xvzf ngrok-v3-stable-linux-amd64.tgz
           chmod +x ngrok
           sudo mv ngrok /usr/local/bin/
