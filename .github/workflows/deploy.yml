@@ -21,8 +21,8 @@ jobs:
 
       - name: Install ngrok
         run: |
-          wget https://bin.equinox.io/c/bNyj1mQVY4/ngrok-v3-stable-linux-amd64.tgz
-          tar xvzf ngrok-v3-stable-linux-amd64.tgz
+          curl -s https://api.ngrok.com/v2/versions/download -H "Ngrok-Edition: oss" -H "Ngrok-Version: 3" -H "Ngrok-OS: linux" -H "Ngrok-Arch: amd64" | jq -r '.download_url' | wget -O ngrok.tgz
+          tar xvzf ngrok.tgz
           chmod +x ngrok
           sudo mv ngrok /usr/local/bin/
 
@@ -45,5 +45,5 @@ jobs:
       - name: Deploy WAR to Tomcat
         run: |
           curl -v --upload-file target/*.war \
-            "${{ steps.ngrok.outputs.ngrok_url }}/manager/text/deploy?path=/your-app-name&update=true" \
-            -u admin:admin123
+            "${{ steps.ngrok.outputs.ngrok_url }}/manager/text/deploy?path=/obstore&update=true" \
+            -u admin:root123
