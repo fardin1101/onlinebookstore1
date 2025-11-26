@@ -1,82 +1,36 @@
-name: Deploy to Tomcat via ngrok
+name: Deploy to Tomcat via Persistent Ngrok
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     
     env:
-      TOMCAT_PORT: 8080
-      APP_CONTEXT_PATH: my-java-app # Define the deployment path/name
+      APP_CONTEXT_PATH: OBStore # Must match the path used in the deployment URL
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK 17 (REQUIRED for Maven Build)
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Install dependencies (jq and ngrok)
-        # Install 'jq' for parsing JSON and 'ngrok' using the stable APT method
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq curl
-
-          # Install ngrok using the official APT repository for stability
-          curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc | \
-            sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
-          echo "deb https://ngrok-agent.s3.amazonaws.com bookworm main" | \
-            sudo tee /etc/apt/sources.list.d/ngrok.list
-          sudo apt update
-          sudo apt install ngrok -y
-
       - name: Build WAR File
         run: mvn clean package
 
-      - name: Authenticate & start ngrok
-        env:
-          NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
+      - name: Deploy WAR to Tomcat via Ngrok
         run: |
-          # Configure the authtoken and start tunneling the assumed Tomcat port (8080)
-          ngrok config add-authtoken $NGROK_AUTHTOKEN
-          # Run ngrok in the background, logging output to a file
-          ngrok http ${{ env.TOMCAT_PORT }} --log=stdout > ngrok.log 2>&1 &
-          echo "Waiting for tunnel to port ${{ env.TOMCAT_PORT }}..."
-          sleep 12 # Give ngrok time to establish the tunnel
-
-      - name: Get ngrok public URL
-        id: ngrok
-        run: |
-          # Query the ngrok API (running on localhost:4040) to get the public HTTPS URL
-          NGROK_URL=$(curl -s --max-time 10 http://localhost:4040/api/tunnels | jq -r '.tunnels[] | select(.proto=="https") | .public_url')
+          # The deployment uses the persistent ngrok URL saved in the secret.
+          # The host value is the NGROK_PUBLIC_URL secret.
+          curl -v \
+            -u ${{ secrets.TOMCAT_USER }}:${{ secrets.TOMCAT_PASSWORD }} \
+            --upload-file target/*.war \
+            "${{ secrets.NGROK_PUBLIC_URL }}/manager/text/deploy?path=/${{ env.APP_CONTEXT_PATH }}&update=true"
           
-          if [ -z "$NGROK_URL" ]; then
-             echo "Error: Could not retrieve ngrok URL from API."
-             # Print log for debugging
-             cat ngrok.log
-             exit 1
-          fi
-
-          echo "ngrok_url=$NGROK_URL" >> $GITHUB_OUTPUT
-          echo "Public URL: $NGROK_URL"
-          echo "Deploying via $NGROK_URL"
-
-      - name: Deploy WAR to Tomcat
-        env:
-          # Use GitHub Secrets for credentials
-          TOMCAT_USER: ${{ secrets.TOMCAT_USER }}
-          TOMCAT_PASSWORD: ${{ secrets.TOMCAT_PASSWORD }}
-        run: |
-          # Use the public ngrok URL to deploy the WAR via the Tomcat Manager text interface
-          curl -v --upload-file target/*.war \
-            "${{ steps.ngrok.outputs.ngrok_url }}/manager/text/deploy?path=/${{ env.APP_CONTEXT_PATH }}&update=true" \
-            -u $TOMCAT_USER:$TOMCAT_PASSWORD
-          
-          # Stop ngrok after deployment
-          pkill ngrok || true
+      
