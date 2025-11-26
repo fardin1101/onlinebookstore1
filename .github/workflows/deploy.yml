@@ -1,23 +1,46 @@
-name: Deploy to Tomcat
+name: Deploy to Tomcat via ngrok
 
 on:
   push:
-    branches: ["main"]
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
       - name: Build WAR
+        run: mvn clean package
+
+      - name: Install ngrok
         run: |
-          mvn clean package
+          wget -q https://bin.equinox.io/c/bNyj1mQVY4/ngrok-v3-stable-linux-amd64.tgz
+          tar xvzf ngrok-v3-stable-linux-amd64.tgz
+          chmod +x ngrok
+
+      - name: Start ngrok
+        env:
+          NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
+        run: |
+          ./ngrok config add-authtoken $NGROK_AUTHTOKEN
+          ./ngrok http 8080 --log=stdout > ngrok.log 2>&1 &
+          sleep 10
+          curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url'
+
+      - name: Get ngrok URL
+        id: ngrok
+        run: |
+          URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
+          echo "ngrok_url=$URL" >> $GITHUB_OUTPUT
 
       - name: Deploy to Tomcat
         run: |
-          curl -u ${{ secrets.TOMCAT_USER }}:${{ secrets.TOMCAT_PASSWORD }} \
-          --upload-file target/*.war \
-          "${{ secrets.TOMCAT_HOST }}/manager/text/deploy?path=/myapp&update=true"
+          curl -v --upload-file target/*.war \
+            "${{ steps.ngrok.outputs.ngrok_url }}/manager/text/deploy?path=/your-app&update=true" \
+            -u admin:admin123
